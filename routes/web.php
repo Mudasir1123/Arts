@@ -110,7 +110,7 @@ Route::get('/addproduct', [userController::class, 'addproduct'])->name('addprodu
 Route::post('/products', [userController::class, 'saveProduct']);
 Route::get('/products', [userController::class, 'showProduct'])->name('products');
 Route::get('/updateproducts/{id}', [UserController::class, 'editproducts'])->name('updateproducts');
-Route::post('/updateproduct', [UserController::class, 'updateproducts'])->name('updateproduct');
+Route::post('/updateproduct', [UserController::class, 'updateproduct'])->name('updateproduct');
 Route::get('viewproduct/{id}', [UserController::class, 'viewproduct'])->name('viewproduct');
 Route::get('productdelete/{id}', [userController::class, 'deleteProduct'])->name('productdelete');
 

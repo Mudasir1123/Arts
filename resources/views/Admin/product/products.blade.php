@@ -27,11 +27,10 @@
                             <th scope="row">{{ $loop->iteration }}</th>
                             <td>{{ $product->product_code }}</td>
                             <td>
-                                <img src="uploads/{{ $product->product_image }}" alt={{ $product->product_name }} height="80"
-                                    width="auto">
+                                <img src="{{ asset('uploads/' . $product->product_image) }}" alt="{{ $product->product_name }}" height="80" width="auto">
                             </td>
                             <td>{{ $product->product_name }}</td>
-                            <td>{{ $product->name }}</td>
+                            <td>{{ $product->category_name }}</td> <!-- Updated to use category_name -->
                             <td>{{ $product->price }}</td>
                             <td>{{ $product->stock }}</td>
                             <td>
@@ -41,7 +40,7 @@
                                 <a href="{{ route('updateproducts', $product->id) }}">
                                     <button type="button" class="btn btn-outline-info btn-sm">Update</button>
                                 </a>
-                                <a href="{{ Route('productdelete', $product->id) }}">
+                                <a href="{{ route('productdelete', $product->id) }}">
                                     <button type="button" class="btn btn-outline-danger btn-sm">Delete</button>
                                 </a>
                             </td>
@@ -50,6 +49,6 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </div>
 </div>
 @endsection

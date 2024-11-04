@@ -132,10 +132,12 @@ class userController extends Controller
 
     public function showProduct()
     {
-        // $productData =  DB::table('tbl_products')->get();
-        $productData =  DB::table('tbl_products')->join('categories','categories_id','=','categories.id')->get();
-        // return $productData;
-        return view('Admin.product.products', ["products" => $productData]);
+        $productData = DB::table('tbl_products')
+            ->join('categories', 'tbl_products.category_id', '=', 'categories.id') // Changed 'categories_id' to 'category_id'
+            ->select('tbl_products.*', 'categories.name as category_name')
+            ->get();
+
+        return view('Admin.product.products', ['products' => $productData]);
     }
 
     public function addproduct()
@@ -143,84 +145,116 @@ class userController extends Controller
         $categories = DB::table('categories')->get();
         return view('Admin.product.addproduct', ["categories" => $categories]);
     }
-    
 
     public function saveProduct(Request $req)
     {
+        // Validate incoming request
         $req->validate([
-            'file' => 'required|mimes:jpg,jpeg,png,webp|max:3000',
+            'product_code' => 'required|unique:tbl_products,product_code',
+            'product_image' => 'required|mimes:jpg,jpeg,png,webp|max:3000', // Changed 'file' to 'product_image'
+            'product_name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric',
+            'stock' => 'required|integer',
+            'category_id' => 'required|exists:categories,id', // Make sure the category exists
         ]);
-        $fileName = time() . '.' . $req->file->extension();
-        $req->file->move(public_path('uploads'), $fileName);
-        $product = DB::table('tbl_products')->insert(
-            [
-                'product_code' => $req->product_code,
-                'product_image' =>$fileName,
-                'product_name' => $req->product_name,
-                'description' => $req->description,
-                'price' => $req->price,
-                'stock' => $req->stock,
-                'categories_id' => $req->category_id,
-            ]
-        );
+
+        // Handle file upload
+        if ($req->hasFile('product_image')) {
+            $fileName = time() . '.' . $req->product_image->extension(); // Use 'product_image' instead of 'file'
+            $req->product_image->move(public_path('uploads'), $fileName);
+        }
+
+        // Insert product into database
+        $product = DB::table('tbl_products')->insert([
+            'product_code' => $req->product_code,
+            'product_image' => $fileName,
+            'product_name' => $req->product_name,
+            'description' => $req->description,
+            'price' => $req->price,
+            'stock' => $req->stock,
+            'category_id' => $req->category_id, // Fixed column name from 'categories_id' to 'category_id'
+        ]);
 
         if ($product) {
-            // return 'Data Saved';
-
-            // return '<script>window.location.href="/"</script>';
-            return redirect()->route('products');
+            return redirect()->route('products')->with('success', 'Product added successfully!');
         } else {
-            return 'Error';
+            return redirect()->back()->withErrors(['msg' => 'Error occurred while saving the product.']);
         }
     }
 
-    public function editproducts(String $id)
+    public function editproducts(string $id)
     {
-        $productData = DB::table('tbl_products')->where('id', $id)->get();
-        return view('Admin.product.updateproduct', ["product" => $productData]);
-        // return $productData;
+        $productData = DB::table('tbl_products')->where('id', $id)->first(); // Use 'first()' for a single record
+        if (!$productData) {
+            return redirect()->route('products')->withErrors(['msg' => 'Product not found.']);
+        }
+    
+        $categories = DB::table('categories')->get(); // Get categories for the edit form
+        return view('Admin.product.updateproduct', ["product" => $productData, "categories" => $categories]);
     }
+    
 
     public function updateproduct(Request $req)
-    {
+{
+    // Validate the incoming request
+    $req->validate([
+        'product_code' => 'required|unique:tbl_products,product_code,' . $req->id, // Ensure unique except for the current product
+        'file' => 'nullable|mimes:jpg,jpeg,png,webp|max:3000', // Update this to match your input name
+        'product_name' => 'required',
+        'description' => 'nullable',
+        'price' => 'required|numeric',
+        'stock' => 'required|integer',
+        'category_id' => 'required|exists:categories,id',
+    ]);
 
-        $updateproduct = DB::table('tbl_products')->where('id', $req->id)->update(
-            [
-                'product_code' => $req->product_code,
-                // 'product_image' => $req->image,
-                'product_name' => $req->product_name,
-                'description' => $req->description,
-                'price' => $req->price,
-                'stock' => $req->stock,
+    // Find the product by ID
+    $productData = DB::table('tbl_products')->where('id', $req->id)->first();
 
-                // 'image' => $req->image,
-            ]   
-        );
-
-        if ($updateproduct) {
-            return redirect()->route('products');
-        } else {
-            return 'Error';
-        }
+    // Handle image upload if a new one is provided
+    if ($req->hasFile('file')) { // Adjusted to match your form input name
+        // Upload new image
+        $fileName = time() . '.' . $req->file('file')->extension();
+        $req->file('file')->move(public_path('uploads'), $fileName);
+    } else {
+        // Keep the old image name
+        $fileName = $productData->product_image;
     }
 
+    // Update the product
+    DB::table('tbl_products')->where('id', $req->id)->update([
+        'product_code' => $req->product_code,
+        'product_image' => $fileName,
+        'product_name' => $req->product_name,
+        'description' => $req->description,
+        'price' => $req->price,
+        'stock' => $req->stock,
+        'category_id' => $req->category_id,
+    ]);
+
+    return redirect()->route('products')->with('success', 'Product updated successfully');
+}
+
+    
+    
 
     public function viewProduct(string $id)
     {
-        $product = DB::table('tbl_products')->where('id', $id)->first();
-        // return $product;
+        $product = DB::table('tbl_products')->where('id', $id)->first(); // Use 'first()' for single record
+        if (!$product) {
+            return redirect()->route('products')->withErrors(['msg' => 'Product not found.']);
+        }
+
         return view('Admin.product.viewproduct', ['product' => $product]);
     }
-    
-    
 
-    public function deleteProduct(String $id)
+    public function deleteProduct(string $id)
     {
-        $delete  = DB::table('tbl_products')->where('id', $id)->delete();
+        $delete = DB::table('tbl_products')->where('id', $id)->delete();
         if ($delete) {
-            return redirect()->route('products');
+            return redirect()->route('products')->with('success', 'Product deleted successfully!');
         } else {
-            return 'An Error Occurd';
+            return redirect()->back()->withErrors(['msg' => 'An error occurred while deleting the product.']);
         }
     }
 
