@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -12,8 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tbl_products', function (Blueprint $table) {
-            $table->id();
-            $table->integer('product_code')->unique(); // Unique product code
+            $table->unsignedInteger('id')->autoIncrement()->unique();
+            $table->unsignedTinyInteger('product_code')->unique(); // Unique product code (0-255)
             $table->unsignedBigInteger('category_id'); // Foreign key for categories
             $table->string('product_image'); // Path for the product image
             $table->string('product_name'); // Name of the product
@@ -25,6 +26,8 @@ return new class extends Migration
             // Foreign key constraint
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
         });
+
+        DB::statement("ALTER TABLE tbl_products AUTO_INCREMENT = 10000;");
     }
 
     /**

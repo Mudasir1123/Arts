@@ -13,14 +13,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;900&display=swap" rel="stylesheet">
 
     <!-- Css Styles -->
-    <link rel="stylesheet" href="css/bootstrap.min.css" type="text/css">
-    <link rel="stylesheet" href="css/font-awesome.min.css" type="text/css">
-    <link rel="stylesheet" href="css/elegant-icons.css" type="text/css">
-    <link rel="stylesheet" href="css/nice-select.css" type="text/css">
-    <link rel="stylesheet" href="css/jquery-ui.min.css" type="text/css">
-    <link rel="stylesheet" href="css/owl.carousel.min.css" type="text/css">
-    <link rel="stylesheet" href="css/slicknav.min.css" type="text/css">
-    <link rel="stylesheet" href="css/style.css" type="text/css">
+    <!-- Css Styles -->
+    <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/font-awesome.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/elegant-icons.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/nice-select.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/jquery-ui.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/owl.carousel.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/slicknav.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/style.css') }}" rel="stylesheet">
 </head>
 
 <body>
@@ -38,7 +39,7 @@
         <div class="humberger__menu__cart">
             <ul>
                 <li><a href="#"><i class="fa fa-heart"></i> <span>1</span></a></li>
-                <li><a href="#"><i class="fa fa-shopping-bag"></i> <span>3</span></a></li>
+                <li><a href="{{ url('shoping-cart') }}"><i class="fa fa-shopping-bag"></i> <span>3</span></a></li>
             </ul>
             <div class="header__cart__price">item: <span>$150.00</span></div>
         </div>
@@ -57,18 +58,18 @@
             </div>
         </div>
         <nav class="humberger__menu__nav mobile-menu">
-        <ul>
-    <li class="active"><a href="{{ url('/') }}">Home</a></li>
-    <li><a href="{{ url('shop-grid') }}">Shop</a></li>
-    <li><a href="#">Pages</a>
-        <ul class="header__menu__dropdown">
-            <li><a href="{{ url('shop-details') }}">Shop Details</a></li>
-            <li><a href="{{ url('shoping-cart') }}">Shoping Cart</a></li>
-            <li><a href="{{ url('checkout') }}">Check Out</a></li>
-            <li><a href="{{ url('contact') }}">Contact</a></li>
-        </ul>
-    </li>
-</ul>
+            <ul>
+                <li class="active"><a href="{{ url('/') }}">Home</a></li>
+                <li><a href="{{ url('shop-grid') }}">Shop</a></li>
+                <li><a href="#">Pages</a>
+                    <ul class="header__menu__dropdown">
+                        <li><a href="{{ url('shop-details') }}">Shop Details</a></li>
+                        <li><a href="{{ url('shoping-cart') }}">Shoping Cart</a></li>
+                        <li><a href="{{ url('checkout') }}">Check Out</a></li>
+                        <li><a href="{{ url('contact') }}">Contact</a></li>
+                    </ul>
+                </li>
+            </ul>
 
 
         </nav>
@@ -110,10 +111,10 @@
                                 <a href="#"><i class="fa fa-pinterest-p"></i></a>
                             </div>
                             <div class="header__top__right__auth">
-                                <a href="{{url('signup')}}"><i class="fa fa-user"></i> Sign up</a>
+                                <a href="{{ url('signup') }}"><i class="fa fa-user"></i> Sign up</a>
                             </div>
                             <div class="header__top__right__auth">
-                                <a href="{{url('signin')}}"><i class="fa fa-user"></i> Login</a>
+                                <a href="{{ url('signin') }}"><i class="fa fa-user"></i> Login</a>
                             </div>
                         </div>
                     </div>
@@ -134,7 +135,7 @@
                             <li><a href="{{ url('shop-grid') }}">Shop</a></li>
                             <li><a href="#">Pages</a>
                                 <ul class="header__menu__dropdown">
-                                    <li><a href="{{ url('shop-details') }}">Shop Details</a></li>
+                                    {{-- <li><a href="{{ url('shop-details') }}">Shop Details</a></li> --}}
                                     <li><a href="{{ url('shoping-cart') }}">Shoping Cart</a></li>
                                     <li><a href="{{ url('checkout') }}">Check Out</a></li>
                                 </ul>
@@ -148,7 +149,8 @@
                     <div class="header__cart">
                         <ul>
                             <li><a href="#"><i class="fa fa-heart"></i> <span>1</span></a></li>
-                            <li><a href="#"><i class="fa fa-shopping-bag"></i> <span>3</span></a></li>
+                            <li><a href="{{ url('shoping-cart') }}"><i class="fa fa-shopping-bag"></i>
+                                    <span>3</span></a></li>
                         </ul>
                         <div class="header__cart__price">item: <span>$150.00</span></div>
                     </div>
@@ -159,56 +161,61 @@
             </div>
         </div>
     </header>
-    
+
     <!-- Hero Section Begin -->
+
     <section class="hero hero-normal">
         <div class="container">
             <div class="row">
+                <!-- Category Filter Section -->
                 <div class="col-lg-3">
                     <div class="hero__categories">
                         <div class="hero__categories__all">
                             <i class="fa fa-bars"></i>
                             <span>All Categories</span>
                         </div>
-                        <ul>
-                            <li><a href="#">Arts & Crafts</a></li>
-                            <li><a href="#">Gift Articles</a></li>
-                            <li><a href="#">Greeting Cards</a></li>
-                            <li><a href="#">Office Supplies</a></li>
-                            <li><a href="#">Fashion Accessories</a></li>
-                            <li><a href="#">Beauty Products</a></li>
-                            <li><a href="#">Home decoration</a></li>
-                            <li><a href="#">Bags</a></li>
-                            <li><a href="#">Files</a></li>
-                            <li><a href="#">Kids’ Toys</a></li>
-                        </ul>
+                        <!-- Filter Form with Checkboxes -->
+                        <form method="GET" action="{{ route('filter-products') }}">
+                            <ul>
+                                <li><input type="checkbox" name="filters[]" value="1"
+                                        {{ in_array('1', request('filters', [])) ? 'checked' : '' }}> Arts & Crafts
+                                </li>
+                                <li><input type="checkbox" name="filters[]" value="2"
+                                        {{ in_array('2', request('filters', [])) ? 'checked' : '' }}> Gift Articles
+                                </li>
+                                <li><input type="checkbox" name="filters[]" value="3"
+                                        {{ in_array('3', request('filters', [])) ? 'checked' : '' }}> Greeting Cards
+                                </li>
+                                <li><input type="checkbox" name="filters[]" value="7"
+                                        {{ in_array('7', request('filters', [])) ? 'checked' : '' }}> Office Supplies
+                                </li>
+                                <li><input type="checkbox" name="filters[]" value="4"
+                                        {{ in_array('4', request('filters', [])) ? 'checked' : '' }}> Home decoration
+                                </li>
+                                <li><input type="checkbox" name="filters[]" value="5"
+                                        {{ in_array('5', request('filters', [])) ? 'checked' : '' }}> Bags</li>
+                                <li><input type="checkbox" name="filters[]" value="6"
+                                        {{ in_array('6', request('filters', [])) ? 'checked' : '' }}> Files</li>
+                                <li><input type="checkbox" name="filters[]" value="8"
+                                        {{ in_array('8', request('filters', [])) ? 'checked' : '' }}> Kids’ Toys</li>
+                            </ul>
+                        </form>
+
                     </div>
                 </div>
-                <div class="col-lg-9">
-                    <div class="hero__search">
-                        <div class="hero__search__form">
-                            <form action="#">
 
-                                <input type="text" placeholder="What do yo u need?">
-                                <button type="submit" class="site-btn">SEARCH</button>
-                            </form>
-                        </div>
-                        <div class="hero__search__phone">
-                            <div class="hero__search__phone__icon">
-                                <i class="fa fa-phone"></i>
-                            </div>
-                            <div class="hero__search__phone__text">
-                                <h5>+65 11.188.888</h5>
-                                <span>support 24/7 time</span>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Search Section -->
+                <div class="hero__search__form">
+                    <form method="GET" action="{{ route('filter-products') }}">
+                        <input type="text" name="search" placeholder="What do you need?"
+                            value="{{ request('search') }}">
+                        <button type="submit" class="site-btn">SEARCH</button>
+                    </form>
                 </div>
             </div>
         </div>
     </section>
-    <!-- Hero Section End -->
-    
+
     @yield('content')
 
     <!-- Footer Section Begin -->
@@ -288,14 +295,23 @@
     <!-- Footer Section End -->
 
     <!-- Js Plugins -->
-    <script src="js/jquery-3.3.1.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/jquery.nice-select.min.js"></script>
-    <script src="js/jquery-ui.min.js"></script>
-    <script src="js/jquery.slicknav.js"></script>
-    <script src="js/mixitup.min.js"></script>
-    <script src="js/owl.carousel.min.js"></script>
-    <script src="js/main.js"></script>
+    <!-- Js Plugins -->
+    <script>
+        // Automatically submit the filter form when a checkbox is clicked
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                this.form.submit();
+            });
+        });
+    </script>
+    <script src="{{ asset('js/jquery-3.3.1.min.js') }}"></script>
+    <script src="{{ asset('js/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('js/jquery.nice-select.min.js') }}"></script>
+    <script src="{{ asset('js/jquery-ui.min.js') }}"></script>
+    <script src="{{ asset('js/jquery.slicknav.js') }}"></script>
+    <script src="{{ asset('js/mixitup.min.js') }}"></script>
+    <script src="{{ asset('js/owl.carousel.min.js') }}"></script>
+    <script src="{{ asset('js/main.js') }}"></script>
 
 
 

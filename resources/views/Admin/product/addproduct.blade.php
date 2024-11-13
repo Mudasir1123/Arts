@@ -9,7 +9,7 @@
             @csrf
             <div class="mb-3">
                 <label for="product_code" class="form-label">Product Code</label>
-                <input type="text" class="form-control" id="product_code" name="product_code" placeholder="Enter unique product code" required>
+                <input type="text" class="form-control" id="product_code" name="product_code" placeholder="Enter unique product code" required value="{{$code}}" readonly>
             </div>
             <div class="mb-3">
                 <label for="product_image" class="form-label">Product Image</label>

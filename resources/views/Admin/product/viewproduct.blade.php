@@ -13,7 +13,7 @@
                             <h2 class="card-title">{{ $product->product_name }}</h2>
                             <p class="card-text">Code: {{ $product->product_code }}</p>
                             <p class="card-text">Description: {{ $product->description }}</p>
-                            <p class="card-text">Price: ${{ number_format($product->price, 2) }}</p>
+                            <p class="card-text">Price: Rs:{{ number_format($product->price, 2) }}</p>
                             <p class="card-text">Stock: {{ $product->stock }}</p>
                         </div>
                     </div>

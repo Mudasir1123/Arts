@@ -3427,3 +3427,15 @@ ol {
 }
 
 
+.hero__categories ul {
+    list-style: none;
+    padding: 0;
+}
+
+.hero__categories ul li {
+    margin: 8px 0;
+}
+
+.hero__categories input[type="checkbox"] {
+    margin-right: 10px;
+}

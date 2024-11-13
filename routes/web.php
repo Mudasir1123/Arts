@@ -4,18 +4,19 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\userController;
 // user routes
 
-Route::get('/', function () {
-    return view('user.index');
-});
+
+//  Route::get('/', function () {
+//     return view('user.index');
+// });
 Route::get('shop-grid', function () {
     return view('user.shop-grid');
 });
 Route::get('shop-details', function () {
     return view('user.shop-details');
 });
-Route::get('shoping-cart', function () {
-    return view('user.shoping-cart');
-});
+// Route::get('shopping-cart', function () {
+//     return view('user.shopping-cart');
+// });
 Route::get('checkout', function () {
     return view('user.checkout');
 });
@@ -114,6 +115,13 @@ Route::post('/updateproduct', [UserController::class, 'updateproduct'])->name('u
 Route::get('viewproduct/{id}', [UserController::class, 'viewproduct'])->name('viewproduct');
 Route::get('productdelete/{id}', [userController::class, 'deleteProduct'])->name('productdelete');
 
+Route::get('/', [UserController::class, 'seeHome'])->name('/');
+
+Route::get('/shop-details/{id}', [UserController::class, 'seeProduct'])->name('shop-details');
+
+
+
+
 
 // Category Routes  
 Route::post('/category', [UserController::class, 'saveCategory']);
@@ -126,3 +134,16 @@ Route::get('deleteCategory/{id}', [UserController::class, 'deleteCategory'])->na
 // Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// In routes/web.php
+Route::get('/filter-products', [UserController::class, 'filterProducts'])->name('filter-products');
+
+
+Route::get('shopping-cart/{id}', [UserController::class, 'addToCart'])->name('shopping-cart');
+
+Route::get('/remove-cart/{id}', [UserController::class, 'removeFromCart'])->name('remove-cart');
+
+
+
+
+
+

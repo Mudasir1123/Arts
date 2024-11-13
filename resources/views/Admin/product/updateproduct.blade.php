@@ -11,7 +11,7 @@
             <div class="mb-3">
                 <label for="product_code" class="form-label">Product Code</label>
                 <input type="text" class="form-control" id="product_code" name="product_code"
-                    value="{{ $product->product_code }}" placeholder="Enter unique product code" required>
+                    value="{{ $product->product_code }}" placeholder="Enter unique product code" required readonly>
             </div>
 
             <div class="mb-3">

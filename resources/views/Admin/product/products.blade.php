@@ -25,7 +25,7 @@
                     @foreach ($products as $product)
                         <tr>
                             <th scope="row">{{ $loop->iteration }}</th>
-                            <td>{{ $product->product_code }}</td>
+                            <td>{{ $product->id }}{{$product->product_code }}</td>
                             <td>
                                 <img src="{{ asset('uploads/' . $product->product_image) }}" alt="{{ $product->product_name }}" height="80" width="auto">
                             </td>
@@ -40,9 +40,9 @@
                                 <a href="{{ route('updateproducts', $product->id) }}">
                                     <button type="button" class="btn btn-outline-info btn-sm">Update</button>
                                 </a>
-                                <a href="{{ route('productdelete', $product->id) }}">
+                                {{-- <a href="{{ route('productdelete', $product->id) }}">
                                     <button type="button" class="btn btn-outline-danger btn-sm">Delete</button>
-                                </a>
+                                </a> --}}
                             </td>
                         </tr>
                     @endforeach

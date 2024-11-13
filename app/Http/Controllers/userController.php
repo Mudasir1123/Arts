@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
 use Nette\Utils\Strings;
-
+use App\Models\User;
 class userController extends Controller
 {
     public function showUser()
@@ -67,14 +66,14 @@ class userController extends Controller
             'role' => 'required|in:0,1,2',
             'image' => 'nullable|mimes:jpg,jpeg,png,webp|max:3000', // Validate image format
         ]);
-    
+
         // Retrieve the existing user record
         $user = DB::table('tbl_user')->where('id', $req->id)->first();
-    
+
         if (!$user) {
             return redirect()->back()->with('error', 'User not found.');
         }
-    
+
         // Prepare data for updating
         $updateData = [
             'name' => $req->name,
@@ -84,34 +83,34 @@ class userController extends Controller
             'role' => $req->role,
             'updated_at' => now(),
         ];
-    
+
         // Hash and update password if provided
         if (!empty($req->password)) {
             $updateData['password'] = bcrypt($req->password);
         }
-    
+
         // Handle file upload for image
         if ($req->hasFile('image')) {
             // Delete old image if it exists
             if (!empty($user->image) && file_exists(public_path('uploads/' . $user->image))) {
                 unlink(public_path('uploads/' . $user->image));
             }
-    
+
             // Save new image
             $fileName = time() . '.' . $req->image->extension();
             $req->image->move(public_path('uploads'), $fileName);
             $updateData['image'] = $fileName;
         }
-    
+
         // Perform the update and redirect
         $updateUser = DB::table('tbl_user')->where('id', $req->id)->update($updateData);
-    
-        return $updateUser 
+
+        return $updateUser
             ? redirect()->route('user')->with('success', 'User updated successfully!')
             : redirect()->back()->with('error', 'Error updating user.');
     }
-    
-    
+
+
 
     public function viewUser(String $id)
     {
@@ -136,14 +135,24 @@ class userController extends Controller
             ->join('categories', 'tbl_products.category_id', '=', 'categories.id') // Changed 'categories_id' to 'category_id'
             ->select('tbl_products.*', 'categories.name as category_name')
             ->get();
-
         return view('Admin.product.products', ['products' => $productData]);
     }
 
     public function addproduct()
     {
         $categories = DB::table('categories')->get();
-        return view('Admin.product.addproduct', ["categories" => $categories]);
+
+        function generateProductCode()
+        {
+            $existingCodes = DB::table('tbl_products')->pluck('product_code')->toArray();
+            $productCode = rand(10, 99);
+            while (in_array($productCode, $existingCodes)) {
+                $productCode = rand(10, 99);
+            }
+            return $productCode;
+        }
+        $code =  generateProductCode();
+        return view('Admin.product.addproduct', ["categories" => $categories,'code'=>$code]);
     }
 
     public function saveProduct(Request $req)
@@ -174,6 +183,7 @@ class userController extends Controller
             'price' => $req->price,
             'stock' => $req->stock,
             'category_id' => $req->category_id, // Fixed column name from 'categories_id' to 'category_id'
+            'created_at' => now(),
         ]);
 
         if ($product) {
@@ -189,54 +199,55 @@ class userController extends Controller
         if (!$productData) {
             return redirect()->route('products')->withErrors(['msg' => 'Product not found.']);
         }
-    
+
         $categories = DB::table('categories')->get(); // Get categories for the edit form
         return view('Admin.product.updateproduct', ["product" => $productData, "categories" => $categories]);
     }
-    
+
 
     public function updateproduct(Request $req)
-{
-    // Validate the incoming request
-    $req->validate([
-        'product_code' => 'required|unique:tbl_products,product_code,' . $req->id, // Ensure unique except for the current product
-        'file' => 'nullable|mimes:jpg,jpeg,png,webp|max:3000', // Update this to match your input name
-        'product_name' => 'required',
-        'description' => 'nullable',
-        'price' => 'required|numeric',
-        'stock' => 'required|integer',
-        'category_id' => 'required|exists:categories,id',
-    ]);
+    {
+        // Validate the incoming request
+        $req->validate([
+            'product_code' => 'required|unique:tbl_products,product_code,' . $req->id, // Ensure unique except for the current product
+            'file' => 'nullable|mimes:jpg,jpeg,png,webp|max:3000', // Update this to match your input name
+            'product_name' => 'required',
+            'description' => 'nullable',
+            'price' => 'required|numeric',
+            'stock' => 'required|integer',
+            'category_id' => 'required|exists:categories,id',
+        ]);
 
-    // Find the product by ID
-    $productData = DB::table('tbl_products')->where('id', $req->id)->first();
+        // Find the product by ID
+        $productData = DB::table('tbl_products')->where('id', $req->id)->first();
 
-    // Handle image upload if a new one is provided
-    if ($req->hasFile('file')) { // Adjusted to match your form input name
-        // Upload new image
-        $fileName = time() . '.' . $req->file('file')->extension();
-        $req->file('file')->move(public_path('uploads'), $fileName);
-    } else {
-        // Keep the old image name
-        $fileName = $productData->product_image;
+        // Handle image upload if a new one is provided
+        if ($req->hasFile('file')) { // Adjusted to match your form input name
+            // Upload new image
+            $fileName = time() . '.' . $req->file('file')->extension();
+            $req->file('file')->move(public_path('uploads'), $fileName);
+        } else {
+            // Keep the old image name
+            $fileName = $productData->product_image;
+        }
+
+        // Update the product
+        DB::table('tbl_products')->where('id', $req->id)->update([
+            'product_code' => $req->product_code,
+            'product_image' => $fileName,
+            'product_name' => $req->product_name,
+            'description' => $req->description,
+            'price' => $req->price,
+            'stock' => $req->stock,
+            'category_id' => $req->category_id,
+            'updated_at' => now(),
+        ]);
+
+        return redirect()->route('products')->with('success', 'Product updated successfully');
     }
 
-    // Update the product
-    DB::table('tbl_products')->where('id', $req->id)->update([
-        'product_code' => $req->product_code,
-        'product_image' => $fileName,
-        'product_name' => $req->product_name,
-        'description' => $req->description,
-        'price' => $req->price,
-        'stock' => $req->stock,
-        'category_id' => $req->category_id,
-    ]);
 
-    return redirect()->route('products')->with('success', 'Product updated successfully');
-}
 
-    
-    
 
     public function viewProduct(string $id)
     {
@@ -247,6 +258,34 @@ class userController extends Controller
 
         return view('Admin.product.viewproduct', ['product' => $product]);
     }
+
+    public function seeProduct(string $id)
+    {
+        $product = DB::table('tbl_products')->where('id', $id)->first(); 
+        if (!$product) {
+            return redirect()->route('products')->withErrors(['msg' => 'Product not found.']);
+        }
+    
+        return view('user.shop-details', ['product' => $product]);
+    }
+    
+
+
+
+
+    public function seeHome(Request $request)
+    {
+        // Get a random set of 8 products
+        $products = DB::table('tbl_products')->inRandomOrder()->limit(8)->get();
+    
+        // Return the view with the products
+        return view('user.index', ['products' => $products]);
+    }
+    
+    
+
+    
+    
 
     public function deleteProduct(string $id)
     {
@@ -259,58 +298,58 @@ class userController extends Controller
     }
 
 
-// Categories CRUD
+    // Categories CRUD
 
-public function showCategory()
-{
-    // Retrieve all categories from the database
-    $categoryData = DB::table('categories')->get();
-    return view('Admin.category.category', ["categories" => $categoryData]);
-}
-
-public function saveCategory(Request $req)
-{
-    $req->validate([
-        'name' => 'required|string|max:255',
-        'image' => 'required|mimes:jpg,jpeg,png,webp,avif|max:3000',
-    ]);
-
-    // Handle the file upload if an image is provided
-    $fileName = null;
-    if ($req->hasFile('image')) {
-        $fileName = time() . '.' . $req->image->extension();
-        $req->image->move(public_path('uploads/categories'), $fileName);
+    public function showCategory()
+    {
+        // Retrieve all categories from the database
+        $categoryData = DB::table('categories')->get();
+        return view('Admin.category.category', ["categories" => $categoryData]);
     }
 
-    // Insert the new category into the database
-    $category = DB::table('categories')->insert([
-        'name' => $req->name,
-        'image' => $fileName,
-        'created_at' => now(),
-    ]);
+    public function saveCategory(Request $req)
+    {
+        $req->validate([
+            'name' => 'required|string|max:255',
+            'image' => 'required|mimes:jpg,jpeg,png,webp,avif|max:3000',
+        ]);
 
-    // Redirect to the category list if the save was successful
-    if ($category) {
-        return redirect()->route('category');
-    } else {
-        return 'Error';
+        // Handle the file upload if an image is provided
+        $fileName = null;
+        if ($req->hasFile('image')) {
+            $fileName = time() . '.' . $req->image->extension();
+            $req->image->move(public_path('uploads/categories'), $fileName);
+        }
+
+        // Insert the new category into the database
+        $category = DB::table('categories')->insert([
+            'name' => $req->name,
+            'image' => $fileName,
+            'created_at' => now(),
+        ]);
+
+        // Redirect to the category list if the save was successful
+        if ($category) {
+            return redirect()->route('category');
+        } else {
+            return 'Error';
+        }
     }
-}
 
-public function editCategory(String $id)
-{
-    // Retrieve the category data for the specified ID
-    $categoryData = DB::table('categories')->where('id', $id)->first();
-    
-    // Check if category exists
-    if (!$categoryData) {
-        return redirect()->route('category')->with('error', 'Category not found.');
+    public function editCategory(String $id)
+    {
+        // Retrieve the category data for the specified ID
+        $categoryData = DB::table('categories')->where('id', $id)->first();
+
+        // Check if category exists
+        if (!$categoryData) {
+            return redirect()->route('category')->with('error', 'Category not found.');
+        }
+
+        return view('Admin.category.updatecategory', ["category" => $categoryData]);
     }
 
-    return view('Admin.category.updatecategory', ["category" => $categoryData]);
-}
-
-public function showUpdateForm($id)
+    public function showUpdateForm($id)
     {
         $category = DB::table('categories')->where('id', $id)->first();
 
@@ -323,56 +362,127 @@ public function showUpdateForm($id)
 
     // Method to handle the update request
     public function updateCategory(Request $req, $id)
+    {
+        $req->validate([
+            'name' => 'required|string|max:255',
+            'image' => 'nullable|mimes:jpg,jpeg,png,webp,avif|max:3000', // Allow image to be optional
+        ]);
+
+        // Get the current image name if not uploading a new image
+        $fileName = DB::table('categories')->where('id', $id)->value('image');
+
+        // If a new image is uploaded, update the image field
+        if ($req->hasFile('image')) {
+            $fileName = time() . '.' . $req->image->extension();
+            $req->image->move(public_path('uploads/categories'), $fileName);
+        }
+
+        // Update the category data in the database
+        $updateCategory = DB::table('categories')->where('id', $id)->update([
+            'name' => $req->name,
+            'image' => $fileName, // Update with new or existing image path
+            'updated_at' => now(),
+        ]);
+
+        // Redirect to the category list if the update was successful
+        if ($updateCategory) {
+            return redirect()->route('category'); // Redirect to the categories page
+        } else {
+            return 'Error';
+        }
+    }
+
+
+    public function viewCategory(String $id)
+    {
+        // Retrieve the category data for the specified ID
+        $categoryData = DB::table('categories')->where('id', $id)->get();
+        // return $categoryData;
+        return view('Admin.category.viewcategory', ['products' => $categoryData]);
+    }
+
+
+    public function deleteCategory(String $id)
+    {
+        // Attempt to delete the category from the database
+        $delete = DB::table('categories')->where('id', $id)->delete();
+
+        // Redirect based on success of deletion
+        if ($delete) {
+            return redirect()->route('category'); // Redirect to the categories page
+        } else {
+            return 'An Error Occurred';
+        }
+    }
+
+
+
+// In your Controller (e.g., ProductController)
+public function filterProducts(Request $request)
 {
-    $req->validate([
-        'name' => 'required|string|max:255',
-        'image' => 'nullable|mimes:jpg,jpeg,png,webp|max:3000', // Allow image to be optional
-    ]);
+    // Initialize the product query using the DB facade
+    $query = DB::table('tbl_products');
 
-    // Get the current image name if not uploading a new image
-    $fileName = DB::table('categories')->where('id', $id)->value('image');
-
-    // If a new image is uploaded, update the image field
-    if ($req->hasFile('image')) {
-        $fileName = time() . '.' . $req->image->extension();
-        $req->image->move(public_path('uploads/categories'), $fileName);
+    // Apply category filters if selected
+    if ($request->has('filters')) {
+        $query->whereIn('category_id', $request->filters);
     }
 
-    // Update the category data in the database
-    $updateCategory = DB::table('categories')->where('id', $id)->update([
-        'name' => $req->name,
-        'image' => $fileName, // Update with new or existing image path
-        'updated_at' => now(),
-    ]);
-
-    // Redirect to the category list if the update was successful
-    if ($updateCategory) {
-        return redirect()->route('category'); // Redirect to the categories page
-    } else {
-        return 'Error';
+    // Apply search query if provided
+    if ($request->has('search')) {
+        $query->where('name', 'like', '%' . $request->search . '%');
     }
+
+    // Get the filtered products
+    $products = $query->get();
+
+    // Return the filtered products to the view
+    return view('user.index', ['products' => $products]);
 }
 
 
-public function viewCategory(String $id)
+
+public function addToCart($id)
 {
-    // Retrieve the category data for the specified ID
-    $categoryData = DB::table('categories')->where('id', $id)->get();
-    // return $categoryData;
-  return view('Admin.category.viewcategory',['products'=>$categoryData]);
-}
+    $product = DB::table('tbl_products')->where('id', $id)->first(); // Get the product by ID
 
-
-public function deleteCategory(String $id)
-{
-    // Attempt to delete the category from the database
-    $delete = DB::table('categories')->where('id', $id)->delete();
-
-    // Redirect based on success of deletion
-    if ($delete) {
-        return redirect()->route('category'); // Redirect to the categories page
-    } else {
-        return 'An Error Occurred';
+    // Check if the product exists
+    if ($product) {
+        $cart = session()->get('cart', []);
+        
+        // Add product to cart as an array
+        $cart[$id] = [
+            'name' => $product->product_name, // Use -> to access properties
+            'price' => $product->price,
+            'image' => $product->product_image, // Use -> to access properties
+        ];
+        session()->put('cart', $cart); // Store the cart back in the session
     }
+    
+    return view('user.shopping-cart'); // Redirect to the shopping cart page    
 }
+
+
+
+
+// CartController.php
+public function removeFromCart($id)
+{
+    $cart = session()->get('cart');
+
+    if (isset($cart[$id])) {
+        unset($cart[$id]);
+        session()->put('cart', $cart);
+    }
+
+    return view('user.shopping-cart');
+}
+
+
+
+
+    
+
+
+
 }
