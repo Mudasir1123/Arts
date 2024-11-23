@@ -4,20 +4,7 @@
 @section('content')
 
   <!-- Breadcrumb Section Begin -->
-  <section class="breadcrumb-section set-bg" data-setbg="img/breadcrumb.jpg">
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-12 text-center">
-                <div class="breadcrumb__text">
-                    <h2>Contact Us</h2>
-                    <div class="breadcrumb__option">
-                        <a href="./index.html">Home</a>
-                        <span>Contact Us</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+  <section class="breadcrumb-section set-bg" data-setbg="img/contact.jpg" style="width: 100%; height: 430px;">
 </section>
 <!-- Breadcrumb Section End -->
 
@@ -29,28 +16,28 @@
                 <div class="contact__widget">
                     <span class="icon_phone"></span>
                     <h4>Phone</h4>
-                    <p>+01-3-8888-6868</p>
+                    <p>(021) 34580415</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-3 col-sm-6 text-center">
                 <div class="contact__widget">
                     <span class="icon_pin_alt"></span>
                     <h4>Address</h4>
-                    <p>60-49 Road 11378 New York</p>
+                    <p>Shah Faisal Colony Flyover, Faisal Cantonment, Karachi, Karachi City, Sindh</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-3 col-sm-6 text-center">
                 <div class="contact__widget">
                     <span class="icon_clock_alt"></span>
                     <h4>Open time</h4>
-                    <p>10:00 am to 23:00 pm</p>
+                    <p>09:00 am to 09:00 pm</p>
                 </div>
             </div>
             <div class="col-lg-3 col-md-3 col-sm-6 text-center">
                 <div class="contact__widget">
                     <span class="icon_mail_alt"></span>
                     <h4>Email</h4>
-                    <p>hello@colorlib.com</p>
+                    <p>info@aptech.com</p>
                 </div>
             </div>
         </div>
@@ -60,16 +47,15 @@
 
 <!-- Map Begin -->
 <div class="map">
-    <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d49116.39176087041!2d-86.41867791216099!3d39.69977417971648!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x886ca48c841038a1%3A0x70cfba96bf847f0!2sPlainfield%2C%20IN%2C%20USA!5e0!3m2!1sen!2sbd!4v1586106673811!5m2!1sen!2sbd"
-        height="500" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>
+   
+    <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d12489.28461595281!2d67.15218243405961!3d24.887445434073122!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3eb339999415e0c3%3A0x36742eee0fd9c291!2sAptech%20Metro%20Star%20Gate!5e0!3m2!1sen!2s!4v1731822751406!5m2!1sen!2s" width="800" height="600" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
     <div class="map-inside">
         <i class="icon_pin"></i>
         <div class="inside-widget">
-            <h4>New York</h4>
+            <h4>Aptech Metro Star Gate</h4>
             <ul>
-                <li>Phone: +12-345-6789</li>
-                <li>Add: 16 Creek Ave. Farmingdale, NY</li>
+                <li>Phone: (021) 34580415</li>
+                <li>Add: Shah Faisal Colony Flyover, Faisal Cantonment, Karachi, Karachi City, Sindh</li>
             </ul>
         </div>
     </div>
@@ -77,7 +63,7 @@
 <!-- Map End -->
 
 <!-- Contact Form Begin -->
-<div class="contact-form spad">
+<div class="contact-form spad mt-5" >
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
@@ -96,7 +82,7 @@
                 </div>
                 <div class="col-lg-12 text-center">
                     <textarea placeholder="Your message"></textarea>
-                    <button type="submit" class="site-btn">SEND MESSAGE</button>
+                    <button type="" class="site-btn">SEND MESSAGE</button>
                 </div>
             </div>
         </form>

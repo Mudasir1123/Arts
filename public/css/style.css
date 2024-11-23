@@ -451,6 +451,16 @@ ol {
 	display: block;
 }
 
+
+.frontorder{
+	color: black;
+	font-size: 1.3rem;
+}
+.frontorder:hover{
+	color: black;
+	font-size: 1.3rem;
+}
+
 .header__cart {
 	text-align: right;
 	padding: 24px 0;
@@ -1889,14 +1899,14 @@ ol {
 	font-size: 18px;
 	color: #1c1c1c;
 	font-weight: 700;
-	width: 100px;
+	width: 120px;
 }
 
 .shoping__cart__table table tbody tr td.shoping__cart__total {
 	font-size: 18px;
 	color: #1c1c1c;
 	font-weight: 700;
-	width: 110px;
+	width: 120px;
 }
 
 .shoping__cart__table table tbody tr td.shoping__cart__item__close {

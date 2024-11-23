@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zxx">
+<html lang="eng">
 
 <head>
     <meta charset="UTF-8">
@@ -7,7 +7,7 @@
     <meta name="keywords" content="Ogani, unica, creative, html">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Ogani | Template</title>
+    <title>Arts & Crafts</title>
 
     <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;600;900&display=swap" rel="stylesheet">
@@ -34,7 +34,7 @@
     <div class="humberger__menu__overlay"></div>
     <div class="humberger__menu__wrapper">
         <div class="humberger__menu__logo">
-            <a href="#"><img src="img/logo.png" alt=""></a>
+            <a href="/"><img src="img/logo.png" alt=""></a>
         </div>
         <div class="humberger__menu__cart">
             <ul>
@@ -64,7 +64,7 @@
                 <li><a href="#">Pages</a>
                     <ul class="header__menu__dropdown">
                         <li><a href="{{ url('shop-details') }}">Shop Details</a></li>
-                        <li><a href="{{ url('shoping-cart') }}">Shoping Cart</a></li>
+                        <li><a href="{{ url('showCart') }}">Shoping Cart</a></li>
                         <li><a href="{{ url('checkout') }}">Check Out</a></li>
                         <li><a href="{{ url('contact') }}">Contact</a></li>
                     </ul>
@@ -82,8 +82,8 @@
         </div>
         <div class="humberger__menu__contact">
             <ul>
-                <li><i class="fa fa-envelope"></i> hello@colorlib.com</li>
-                <li>Free Shipping for all Order of $99</li>
+                <li><i class="fa fa-envelope"></i> Email: info@aptech.com</li>
+                <li>Free Shipping for all Order</li>
             </ul>
         </div>
     </div>
@@ -97,8 +97,8 @@
                     <div class="col-lg-6 col-md-6">
                         <div class="header__top__left">
                             <ul>
-                                <li><i class="fa fa-envelope"></i> hello@colorlib.com</li>
-                                <li>Free Shipping for all Order of $99</li>
+                                <li><i class="fa fa-envelope"></i>info@aptech.com</li>
+                                <li>Free Shipping for all Order</li>
                             </ul>
                         </div>
                     </div>
@@ -110,12 +110,18 @@
                                 <a href="#"><i class="fa fa-linkedin"></i></a>
                                 <a href="#"><i class="fa fa-pinterest-p"></i></a>
                             </div>
+                            @if (Auth::guest())
+                                <div class="header__top__right__auth">
+                                    <a href="{{ url('sign') }}"><i class="fa fa-user"></i> Sign up</a>
+                                </div>
+                                <div class="header__top__right__auth">
+                                    <a href="{{ url('login') }}"><i class="fa fa-user"></i> Login</a>
+                                </div>
+                            @else
                             <div class="header__top__right__auth">
-                                <a href="{{ url('signup') }}"><i class="fa fa-user"></i> Sign up</a>
+                                <a href="{{ url('logout') }}"><i class="fa fa-user"></i> Logout</a>
                             </div>
-                            <div class="header__top__right__auth">
-                                <a href="{{ url('signin') }}"><i class="fa fa-user"></i> Login</a>
-                            </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -125,19 +131,19 @@
             <div class="row">
                 <div class="col-lg-3">
                     <div class="header__logo">
-                        <a href="./index.html"><img src="img/logo.png" alt=""></a>
+                        <a href="./">
+                            <img src="img/logo.png" alt="" style="width: 80px; height: auto;">
+                        </a>
                     </div>
                 </div>
                 <div class="col-lg-6">
                     <nav class="header__menu">
-                        <ul>
+                        <ul class="header-menu-list">
                             <li class="active"><a href="{{ url('/') }}">Home</a></li>
                             <li><a href="{{ url('shop-grid') }}">Shop</a></li>
                             <li><a href="#">Pages</a>
                                 <ul class="header__menu__dropdown">
-                                    {{-- <li><a href="{{ url('shop-details') }}">Shop Details</a></li> --}}
-                                    <li><a href="{{ url('shoping-cart') }}">Shoping Cart</a></li>
-                                    <li><a href="{{ url('checkout') }}">Check Out</a></li>
+                                    <li><a href="{{ url('showCart') }}">Shopping Cart</a></li>
                                 </ul>
                             </li>
                             <li><a href="{{ url('about') }}">About</a></li>
@@ -145,14 +151,22 @@
                         </ul>
                     </nav>
                 </div>
+                
                 <div class="col-lg-3">
                     <div class="header__cart">
                         <ul>
-                            <li><a href="#"><i class="fa fa-heart"></i> <span>1</span></a></li>
-                            <li><a href="{{ url('shoping-cart') }}"><i class="fa fa-shopping-bag"></i>
-                                    <span>3</span></a></li>
+                            <li><a class="frontorder" href="{{ url('frontorder') }}">Orders</a></li>
+                            <li><a href="{{ url('showCart') }}"><i class="fa fa-shopping-bag"></i>
+                                    <span>
+                                        @if (session('cart'))
+                                            {{ count(session('cart')) }}
+                                        @else
+                                            {{ '0' }}
+                                        @endif
+                                    </span>
+                                </a>
+                            </li>
                         </ul>
-                        <div class="header__cart__price">item: <span>$150.00</span></div>
                     </div>
                 </div>
             </div>
@@ -161,6 +175,10 @@
             </div>
         </div>
     </header>
+
+
+
+
 
     <!-- Hero Section Begin -->
 
@@ -205,13 +223,13 @@
                 </div>
 
                 <!-- Search Section -->
-                <div class="hero__search__form">
+                {{-- <div class="hero__search__form">
                     <form method="GET" action="{{ route('filter-products') }}">
                         <input type="text" name="search" placeholder="What do you need?"
                             value="{{ request('search') }}">
                         <button type="submit" class="site-btn">SEARCH</button>
                     </form>
-                </div>
+                </div> --}}
             </div>
         </div>
     </section>
@@ -225,12 +243,12 @@
                 <div class="col-lg-3 col-md-6 col-sm-6">
                     <div class="footer__about">
                         <div class="footer__about__logo">
-                            <a href="./index.html"><img src="img/logo.png" alt=""></a>
+                            <a href="/"><img src="img/logo.png" alt="" style="width: 150px; height: auto;"></a>
                         </div>
                         <ul>
-                            <li>Address: 60-49 Road 11378 New York</li>
-                            <li>Phone: +65 11.188.888</li>
-                            <li>Email: hello@colorlib.com</li>
+                            <li>Address:Shah Faisal Colony Flyover, Faisal Cantonment, Karachi, Karachi City, Sindh</li>
+                            <li>Phone: (021) 34580415</li>
+                            <li>Email: info@aptech.com</li>
                         </ul>
                     </div>
                 </div>
@@ -238,12 +256,11 @@
                     <div class="footer__widget">
                         <h6>Useful Links</h6>
                         <ul>
-                            <li><a href="#">About Us</a></li>
-                            <li><a href="#">About Our Shop</a></li>
-                            <li><a href="#">Secure Shopping</a></li>
-                            <li><a href="#">Delivery infomation</a></li>
-                            <li><a href="#">Privacy Policy</a></li>
-                            <li><a href="#">Our Sitemap</a></li>
+                            <li class="active"><a href="{{ url('/') }}">Home</a></li>
+                            <li><a href="{{ url('shop-grid') }}">Shop</a></li>
+                            <li><a href="{{ url('about') }}">About</a></li>
+                            <li><a href="{{ url('contact') }}">Contact</a></li>
+                            <li><a href="{{ url('showCart') }}">Shopping Cart</a></li>
                         </ul>
                         <ul>
                             <li><a href="#">Who We Are</a></li>
@@ -280,9 +297,9 @@
                                 Copyright &copy;
                                 <script>
                                     document.write(new Date().getFullYear());
-                                </script> All rights reserved | This template is made with <i
-                                    class="fa fa-heart" aria-hidden="true"></i> by <a href="https://colorlib.com"
-                                    target="_blank">Colorlib</a>
+                                </script> All rights reserved | Arts & Crafts <i
+                                    class="fa fa-heart" aria-hidden="true"></i> by Arts<a href="#"
+                                    target="_blank"></a>
                                 <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
                             </p>
                         </div>

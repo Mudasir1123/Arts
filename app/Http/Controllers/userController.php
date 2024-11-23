@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Nette\Utils\Strings;
-use App\Models\User;
+use Illuminate\Support\Facades\Order;
+use Illuminate\Support\Facades\Session;
+
 class userController extends Controller
 {
     public function showUser()
@@ -13,6 +17,7 @@ class userController extends Controller
         $userData =  DB::table('tbl_user')->get();
         return view('Admin.users.user', ["data" => $userData]);
     }
+
 
     public function saveUser(Request $req)
     {
@@ -27,7 +32,7 @@ class userController extends Controller
             [
                 'name' => $req->name,
                 'email' => $req->email,
-                'password' => $req->password,
+                'password' => Hash::make($req->password),
                 'mobile' => $req->mobile,
                 'gender' => $req->gender,
                 'role' => $req->role,
@@ -41,6 +46,35 @@ class userController extends Controller
 
             // return '<script>window.location.href="/"</script>';
             return redirect()->route('user');
+        } else {
+            return 'Error';
+        }
+    }
+
+    public function SignUp(Request $req)
+    {
+        // $req->validate([
+        //     'file' => 'required|mimes:jpg,jpeg,png,webp|max:3000',
+        // ]);
+
+        // $fileName = time() . '.' . $req->file->extension();
+        // $req->file->move(public_path('uploads'), $fileName);
+
+        $person = DB::table('tbl_user')->insert(
+            [
+                'name' => $req->name,
+                'email' => $req->email,
+                'password' => Hash::make($req->password),
+                // 'mobile' => $req->mobile,
+                // 'gender' => $req->gender,
+                'role' => 0,
+                // 'image' =>  $fileName,
+                'created_at' => now(),
+            ]
+        );
+
+        if ($person) {
+            return view('Admin.signin');
         } else {
             return 'Error';
         }
@@ -152,7 +186,7 @@ class userController extends Controller
             return $productCode;
         }
         $code =  generateProductCode();
-        return view('Admin.product.addproduct', ["categories" => $categories,'code'=>$code]);
+        return view('Admin.product.addproduct', ["categories" => $categories, 'code' => $code]);
     }
 
     public function saveProduct(Request $req)
@@ -261,14 +295,14 @@ class userController extends Controller
 
     public function seeProduct(string $id)
     {
-        $product = DB::table('tbl_products')->where('id', $id)->first(); 
+        $product = DB::table('tbl_products')->where('id', $id)->first();
         if (!$product) {
             return redirect()->route('products')->withErrors(['msg' => 'Product not found.']);
         }
-    
+
         return view('user.shop-details', ['product' => $product]);
     }
-    
+
 
 
 
@@ -277,15 +311,11 @@ class userController extends Controller
     {
         // Get a random set of 8 products
         $products = DB::table('tbl_products')->inRandomOrder()->limit(8)->get();
-    
+
         // Return the view with the products
         return view('user.index', ['products' => $products]);
     }
-    
-    
 
-    
-    
 
     public function deleteProduct(string $id)
     {
@@ -417,72 +447,454 @@ class userController extends Controller
 
 
 
-// In your Controller (e.g., ProductController)
-public function filterProducts(Request $request)
-{
-    // Initialize the product query using the DB facade
-    $query = DB::table('tbl_products');
+    // In your Controller (e.g., ProductController)
 
-    // Apply category filters if selected
-    if ($request->has('filters')) {
-        $query->whereIn('category_id', $request->filters);
+
+
+
+
+    public function filterProducts(Request $request)
+    {
+        // Initialize the product query using the DB facade
+        $query = DB::table('tbl_products');
+
+        // Apply category filters if selected
+        if ($request->has('filters')) {
+            $query->whereIn('category_id', $request->filters);
+        }
+
+        // Apply search query if provided
+        if ($request->has('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        // Get the filtered products
+        $products = $query->get();
+
+        // Return the filtered products to the view
+        return view('user.index', ['products' => $products]);
     }
 
-    // Apply search query if provided
-    if ($request->has('search')) {
-        $query->where('name', 'like', '%' . $request->search . '%');
+
+
+    public function addToCart(Request $request, $id)
+    {
+        // Session::flush();
+        // exit;
+
+        $product = DB::table('tbl_products')->where('id', $id)->first(); // Get the product by ID
+
+        // Check if the product exists
+        if ($product) {
+            $cart = session()->get('cart', []);
+            $quantity = $request->input('quantity'); // Use input() method to get quantity
+
+            // Check if the product is already in the cart
+            if (isset($cart[$id])) {
+                // If it is, just update the quantity
+                $cart[$id]['quantity'] += $quantity;
+            } else {
+                // If not, add the product to the cart
+                $cart[$id] = [
+                    'id' => $product->id,
+                    'name' => $product->product_name,
+                    'price' => $product->price,
+                    'image' => $product->product_image,
+                    'quantity' => $quantity, // Store the quantity
+                ];
+            }
+
+            session()->put('cart', $cart); // Store the cart back in the session
+
+            // Set a session variable to indicate that an item has been added
+            session()->flash('success', 'Product added to cart successfully!');
+        }
+
+        return redirect()->back();
+    }
+    public function updateCart(Request $request)
+    {
+        // Retrieve the cart from the session
+        $cart = session('cart', []);
+
+        // Check if the product exists in the cart
+        if (isset($cart[$request->product_id])) {
+            // Update the quantity
+            $cart[$request->product_id]['quantity'] = $request->quantity;
+
+            // Save the updated cart back to the session
+            session(['cart' => $cart]);
+        }
+
+        // Return a response (you can customize this)
+        return response()->json(['success' => true, 'cart' => $cart]);
     }
 
-    // Get the filtered products
-    $products = $query->get();
+    // CartController.php
+    public function removeFromCart($id)
+    {
+        $cart = session()->get('cart');
 
-    // Return the filtered products to the view
-    return view('user.index', ['products' => $products]);
-}
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
+            session()->put('cart', $cart);
+        }
+
+        return view('user.shopping-cart');
+    }
 
 
 
-public function addToCart($id)
-{
-    $product = DB::table('tbl_products')->where('id', $id)->first(); // Get the product by ID
+    // Handle registration
+    public function register(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
 
-    // Check if the product exists
-    if ($product) {
-        $cart = session()->get('cart', []);
-        
-        // Add product to cart as an array
-        $cart[$id] = [
-            'name' => $product->product_name, // Use -> to access properties
-            'price' => $product->price,
-            'image' => $product->product_image, // Use -> to access properties
+        User::create([
+            'name' => $request->username,
+            'email' => $request->email,
+            'password' => bcrypt($request->password),
+        ]);
+
+        // Auto-login after registration
+        Auth::attempt($request->only('email', 'password'));
+
+        return redirect()->intended('checkout');
+    }
+
+    // Handle login
+    public function login(Request $request)
+    {
+        $credentials = $request->only('email', 'password');
+        if (Auth::attempt($credentials)) {
+            if (Auth::user()->role == 0) {
+                return redirect('/adminn');
+            } else if (Auth::user()->role == 1) {
+                return redirect()->route('/');
+            } else {
+                return redirect()->back()->withErrors(['email' => 'Invalid credentials']);
+            }
+        }
+        return redirect()->back()->withErrors(['email' => 'Invalid credentials']);
+    }
+
+    // Handle logout
+    public function logout()
+    {
+        Auth::logout();
+        return redirect('/');
+    }
+
+
+    public function showOrder()
+    {
+
+        $orderData = DB::table('orders')->get();
+        // return $orderData;
+        // exit;
+        return view('Admin.order.order', ["data" => $orderData]);
+    }
+
+
+    public function saveOrder(Request $req)
+    {
+        // Check if the user exists
+        $user = Auth::user();
+
+        if (!$user) {
+            // Redirect if user is not authenticated
+            return redirect()->route('login');
+        }
+
+        // Insert order data and retrieve the inserted order ID
+        $orderId = DB::table('orders')->insertGetId(
+            [
+                'user_id' => $req->user_id,
+                'customer_name' => $req->customer_name,
+                'email' => $req->email,
+                'phone' => $req->phone,
+                'address' => $req->address,
+                'quantity' => $req->quantity,
+                'total_amount' => $req->total_amount,
+                'delivery_type' => $req->delivery_type,
+                'payment_status' => $req->payment_status,
+                'account_number' => $req->account_number,
+                'created_at' => now(),
+            ]
+        );
+
+        if ($orderId) {
+            // Retrieve cart items from session
+            $cartItems = session('cart');
+
+            if ($cartItems && is_array($cartItems)) {
+                foreach ($cartItems as $item) {
+                    DB::table('order_items')->insert(
+                        [
+                            'order_id' => $orderId, // Link to the inserted order
+                            'product_id' => $item['id'], // Product ID
+                            'quantity' => $item['quantity'], // Quantity of the product
+                            'price' => $item['price'], // Price per unit
+                            'created_at' => now(),
+                        ]
+                    );
+                }
+            }
+
+            // Clear the cart after order is saved
+            session()->forget('cart');
+
+            // Redirect after saving
+            return redirect()->route('/');
+        } else {
+            return 'Error'; // Return error message if order insertion fails
+        }
+    }
+
+    public function editOrder($id)
+    {
+        // Retrieve the order by its ID
+        $order = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('tbl_products', 'order_items.product_id', '=', 'tbl_products.id')
+            ->where('orders.id', $id)
+            ->get();
+        // return $order[0]->order_id;
+        // exit;
+        // Check if order exists
+        if (!$order) {
+            return redirect()->route('order')->with('error', 'Order not found.');
+        }
+
+        // Pass the $order to the view
+        return view('Admin.order.updateorder', ['data' => $order]);
+    }
+
+    public function updateOrder(Request $req)
+    {
+        // Retrieve the existing order record
+        $order = DB::table('orders')->where('id', $req->id)->first();
+
+        if (!$order) {
+            return redirect()->back()->with('error', 'Order not found.');
+        }
+
+        // Prepare data for updating
+        $updateData = [
+            'order_status' => $req->order_status,
+            'updated_at' => now(),
         ];
-        session()->put('cart', $cart); // Store the cart back in the session
+
+        // Perform the update
+        $updatedOrder = DB::table('orders')->where('id', $req->id)->update($updateData);
+
+        return $updatedOrder
+            ? redirect()->route('order')->with('success', 'Order updated successfully!')
+            : redirect()->back()->with('error', 'Error updating order.');
     }
-    
-    return view('user.shopping-cart'); // Redirect to the shopping cart page    
-}
+
+
+
+    public function viewOrder(String $id)
+    {
+        $order = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('tbl_products', 'order_items.product_id', '=', 'tbl_products.id')
+            ->where('orders.id', $id)
+            ->select(
+                'orders.*',
+                'order_items.quantity as item_quantity',
+                'order_items.price as item_price',
+                'tbl_products.product_name',
+                'tbl_products.product_image',
+                'tbl_products.description'
+            )
+            ->get();
+
+        // Pass the data to the view
+        return view('Admin.order.detailorder', ['orderItems' => $order]);
+    }
+
+
+
+    public function viewfrontorder(String $id)
+    {
+        $order = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('tbl_products', 'order_items.product_id', '=', 'tbl_products.id')
+            ->where('orders.id', $id)
+            ->select(
+                'orders.*',
+                'order_items.quantity as item_quantity',
+                'order_items.price as item_price',
+                'tbl_products.product_name',
+                'tbl_products.product_image',
+                'tbl_products.description'
+            )
+            ->get();
+
+        // Pass the data to the view
+        return view('user.viewfrontorder', ['orderItems' => $order]);
+    }
+
+
+
+    public function storeUser(Request $req)
+    {
+        // $req->validate([
+        //     'file' => 'required|mimes:jpg,jpeg,png,webp|max:3000',
+        // ]);
+
+        // $fileName = time() . '.' . $req->file->extension();
+        // $req->file->move(public_path('uploads'), $fileName);
+
+        $person = DB::table('tbl_user')->insert(
+            [
+                'name' => $req->name,
+                'email' => $req->email,
+                'password' => Hash::make($req->password),
+                'mobile' => $req->mobile,
+                'gender' => $req->gender,
+                'role' => 2,
+                // 'image' =>  $fileName,
+                'created_at' => now(),
+            ]
+        );
+
+        if ($person) {
+            // return 'Data Saved';
+
+            // return '<script>window.location.href="/"</script>';
+            return redirect()->route('/');
+        } else {
+            return 'Error';
+        }
+    }
 
 
 
 
-// CartController.php
-public function removeFromCart($id)
+    public function frontshowOrder()
+    {
+
+        if (Auth::user() && Auth::user()->role == 1) {
+            $userId = Auth::user()->id;
+            $orderData =  DB::table('orders')->where('user_id', $userId)->get();
+            // return $orderData;
+            // exit;
+            return view('user.frontorder', ["data" => $orderData]);
+        } else {
+            return redirect('/login');
+        }
+    }
+
+
+
+
+    public function store(Request $request)
+    {
+        $orderId = $request->input('order_id');
+        $feedbackData = $request->input('feedback');
+        $ratingData = $request->input('rating');
+
+        $feedbacks = [];
+        foreach ($feedbackData as $productId => $feedback) {
+            $feedbacks[] = [
+                'order_id' => $orderId,
+                'product_id' => $productId,
+                'feedback' => $feedback,
+                'rating' => $ratingData[$productId],
+                'created_at' => now(),
+            ];
+        }
+
+        // Insert feedbacks into the database
+        DB::table('feedbacks')->insert($feedbacks);
+
+        return redirect()->back()->with('success', 'Feedback submitted successfully!');
+    }
+
+
+    public function showFeedbackForOrder($orderId)
+    {
+        // Fetch the order details
+        $order = DB::table('orders')->find($orderId);
+
+        // If order is not found, redirect with an error message
+        if (!$order) {
+            return redirect()->route('orders.index')->with('error', 'Order not found.');
+        }
+
+        // Fetch feedback related to this order
+        $feedbacks = DB::table('feedbacks')
+            ->where('order_id', $orderId)
+            ->get();
+
+
+        // Return the view with order details and feedback
+        return view('feedback.show', [
+            'order' => $order, // Pass order as 'order'
+            'feedbacks' => $feedbacks,
+        ]);
+    }
+
+
+    public function show($id)
+    {
+        // Fetch the current product details
+        $product = DB::table('tbl_products')->where('id', $id)->first();
+
+        if (!$product) {
+            abort(404, 'Product not found');
+        }
+
+        // Fetch related products from the same category
+        $relatedProducts = DB::table('tbl_products')
+            ->where('category_id', $product->category_id)
+            ->where('id', '!=', $id) // Exclude the current product
+            ->limit(4) // Limit the number of related products
+            ->get();
+
+        return view('shop-details', compact('product', 'relatedProducts'));
+    }
+
+
+
+    public function seeShop(Request $request)
+    {
+        // Get a random set of 8 products
+        $products = DB::table('tbl_products')->inRandomOrder()->limit(16)->get();
+
+        // Return the view with the products
+        return view('user.shop-grid', ['products' => $products]);
+    }
+
+
+
+
+    public function filterProduct($id)
 {
-    $cart = session()->get('cart');
-
-    if (isset($cart[$id])) {
-        unset($cart[$id]);
-        session()->put('cart', $cart);
+    if (!$id) {
+        return response()->json(['error' => 'Category ID is required'], 400);
     }
 
-    return view('user.shopping-cart');
+    // Fetch products by category ID
+    $products = DB::table('tbl_products')->where('category_id', $id)->get();
+
+    // If no products, return an empty response
+    if ($products->isEmpty()) {
+        return response()->json(['html' => '<p>No products found for this category.</p>']);
+    }
+
+    // Render product cards using the partial view
+    $html = view('partials.filtered-products', compact('products'))->render();
+
+    return response()->json(['html' => $html]);
 }
-
-
-
-
-    
-
 
 
 }

@@ -40,9 +40,9 @@
                                 <a href="{{ route('updateproducts', $product->id) }}">
                                     <button type="button" class="btn btn-outline-info btn-sm">Update</button>
                                 </a>
-                                {{-- <a href="{{ route('productdelete', $product->id) }}">
+                                <a href="{{ route('productdelete', $product->id) }}">
                                     <button type="button" class="btn btn-outline-danger btn-sm">Delete</button>
-                                </a> --}}
+                                </a>
                             </td>
                         </tr>
                     @endforeach
